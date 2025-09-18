@@ -1,0 +1,129 @@
+#include<iostream>
+#include<iomanip>
+#include<vector>
+using namespace std;
+
+struct process{
+    int id;
+    int arrival_time=0;
+    int burst_time;
+    int priority;
+};
+
+template<typename T>
+struct Node{
+    T data;
+    Node* next;
+
+    Node(T val){
+        data=val;
+        next=nullptr;
+    }
+};
+
+template<typename T>
+struct queue{
+    Node<T>* tail;
+    Node<T>* frontNode;
+
+    queue(){
+        frontNode=tail=nullptr;
+    }
+
+    bool empty(){
+
+        if(frontNode){
+           return false;
+        }
+        else{
+            return true;
+        }
+
+    }
+
+    T front(){
+        if(!empty()){
+            return frontNode->data;
+        }
+        throw runtime_error("Queue is empty!");
+    }
+
+    void push(T val){
+        Node<T>* newNode=new Node<T>(val);
+        if(empty()){
+            frontNode=newNode;
+            newNode->next=nullptr;
+            tail=newNode;
+        }
+        else{
+            tail->next=newNode;
+            tail=newNode;
+        }
+
+    }
+
+    void pop(){
+        Node<T>* temp=frontNode;
+        frontNode=frontNode->next;
+        delete temp;
+        if (frontNode == nullptr) tail = nullptr;
+    }
+
+
+};
+
+//Turn Around Time=Completion Time - Arrival Time
+//Waiting Time=Turn Around time - Burst Time
+
+
+//First Come First Serve
+void FCFS(vector<process> v){
+queue<process> q;
+int WT,TAT;
+int CT=0;
+
+for(int i=0;i<v.size();i++){
+    q.push(v[i]);
+}
+
+ cout << left << setw(10) << "PID"
+         << setw(15) << "Completion"
+         << setw(15) << "TurnAround"
+         << setw(15) << "Waiting" << endl;
+
+while(!q.empty()){
+    process p=q.front();
+    q.pop();
+
+    CT+=p.burst_time;
+    TAT=CT-p.arrival_time;
+    WT=TAT-p.burst_time;
+
+     cout << left << setw(10) << p.id
+             << setw(15) << CT
+             << setw(15) << TAT
+             << setw(15) << WT << endl;
+
+}
+
+}
+
+void SJF(){
+    
+}
+
+
+
+int main() {
+    vector<process> v = {
+        {1, 0, 5, 0},
+        {2, 1, 3, 0},
+        {3, 2, 8, 0},
+        {4, 3, 6, 0}
+    };
+
+    FCFS(v);
+
+    return 0;
+}
+
