@@ -1,6 +1,7 @@
 #include<iostream>
 #include<iomanip>
 #include<vector>
+#include<queue>
 using namespace std;
 
 struct process{
@@ -22,11 +23,11 @@ struct Node{
 };
 
 template<typename T>
-struct queue{
+struct Queue{
     Node<T>* tail;
     Node<T>* frontNode;
 
-    queue(){
+    Queue(){
         frontNode=tail=nullptr;
     }
 
@@ -108,8 +109,58 @@ while(!q.empty()){
 
 }
 
-void SJF(){
-    
+struct cmp {
+    bool operator()(process const& a, process const& b) {
+        return a.burst_time > b.burst_time; 
+    }
+};
+
+//Shortest job first algo 
+void SJF(vector<process> v) {
+    int n = v.size();
+    int completed = 0, CT = 0;
+    int WT, TAT;
+
+    priority_queue<process, vector<process>, cmp> pq;
+
+    vector<bool> inQueue(n, false);
+
+    cout << left << setw(10) << "PID"
+         << setw(15) << "Completion"
+         << setw(15) << "TurnAround"
+         << setw(15) << "Waiting" << endl;
+
+    while (completed < n) {
+        for (int i = 0; i < n; i++) {
+            if (!inQueue[i] && v[i].arrival_time <= CT) {
+                pq.push(v[i]);
+
+                inQueue[i] = true;
+            }
+        }
+
+        if (!pq.empty()) 
+        {
+            process p = pq.top(); pq.pop();
+
+            if (CT < p.arrival_time) CT = p.arrival_time;
+
+            CT += p.burst_time;
+            TAT = CT - p.arrival_time;
+            WT = TAT - p.burst_time;
+
+            cout << left << setw(10) << p.id
+        << setw(15) << CT
+                 << setw(15) << TAT
+                 << setw(15) << WT << endl;
+
+            completed++;
+        } 
+        else 
+        {
+            CT++;
+        }
+    }
 }
 
 
@@ -122,7 +173,7 @@ int main() {
         {4, 3, 6, 0}
     };
 
-    FCFS(v);
+    SJF(v);
 
     return 0;
 }
