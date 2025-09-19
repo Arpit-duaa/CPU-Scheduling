@@ -163,6 +163,71 @@ void SJF(vector<process> v) {
     }
 }
 
+void RR(vector<process> v, int quantum) {
+    int n = v.size();
+    vector<int> rem_bt(n);   
+    vector<int> CT(n);     
+    int t = 0;             
+
+    for (int i = 0; i < n; i++) {
+        rem_bt[i] = v[i].burst_time;
+    }
+
+    queue<int> q; 
+    vector<bool> inQueue(n, false);
+
+    for (int i = 0; i < n; i++) {
+        if (v[i].arrival_time <= t) {
+            q.push(i);
+            inQueue[i] = true;
+        }
+    }
+
+    cout << left << setw(10) << "PID"
+         << setw(15) << "Completion"
+         << setw(15) << "TurnAround"
+         << setw(15) << "Waiting" << endl;
+
+    while (!q.empty()) {
+        int i = q.front();
+        q.pop();
+
+        if (t < v[i].arrival_time) {
+            t = v[i].arrival_time;
+        }
+
+        if (rem_bt[i] > quantum) {
+
+            t += quantum;
+            rem_bt[i] -= quantum;
+        } else {
+            t += rem_bt[i];
+            rem_bt[i] = 0;
+            CT[i] = t; 
+        }
+
+        for (int j = 0; j < n; j++) {
+            if (!inQueue[j] && v[j].arrival_time <= t && rem_bt[j] > 0) {
+                q.push(j);
+                inQueue[j] = true;
+            }
+        }
+
+        if (rem_bt[i] > 0) {
+            q.push(i);
+        }
+    }
+
+    for (int i = 0; i < n; i++) {
+        int TAT = CT[i] - v[i].arrival_time;
+        int WT = TAT - v[i].burst_time;
+        cout << left << setw(10) << v[i].id
+             << setw(15) << CT[i]
+             << setw(15) << TAT
+             << setw(15) << WT << endl;
+    }
+}
+
 
 
 int main() {
@@ -173,7 +238,9 @@ int main() {
         {4, 3, 6, 0}
     };
 
-    SJF(v);
+    int quantum=3;
+
+    RR(v,quantum);
 
     return 0;
 }
