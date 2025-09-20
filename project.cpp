@@ -109,58 +109,144 @@ while(!q.empty()){
 
 }
 
-struct cmp {
-    bool operator()(process const& a, process const& b) {
-        return a.burst_time > b.burst_time; 
+template<typename T,typename compare>
+struct Heaps
+{
+   T arr[100];
+   int size=0;
+   compare comp;
+
+
+   void insertion(T val){
+    size++;
+    arr[size]=val;
+
+    int i = size;
+    while(i > 1){
+        int parent = i / 2;
+        if(comp(arr[i], arr[parent])){
+            swap(arr[i], arr[parent]);
+            i = parent;
+        }
+        else break;
+    }
+   }
+
+   void print(){
+    for(int i=1;i<=size;i++){
+        cout<<arr[i]<<"  ";
+    }
+   }
+
+   void Deletion(){
+     
+    arr[1]=arr[size];
+    size--;
+
+    int i=1;
+    while(i<size){
+        int l=2*i;
+        int r=2*i+1;
+
+        if(l<=size && comp(arr[l],arr[i])){
+            swap(arr[i],arr[l]);
+            i=l;
+        }
+        else if(r<=size && comp(arr[r],arr[i])){
+            swap(arr[r],arr[i]);
+            i=r;
+        }
+        else{
+        return;
+        }
+    }
+   }
+
+       void Heapify(int v[], int n, int i) {
+        int largest = i;
+        int left = 2 * i;
+        int right = 2 * i + 1;
+
+        if (left <= n && comp(v[left] , v[largest])) {
+            largest = left;
+        }
+        if (right <= n && comp(v[right], v[largest])) {
+            largest = right;
+        }
+
+        if (largest != i) {
+            swap(v[i], v[largest]);
+            Heapify(v, n, largest);
+        }
+    }
+
+    void Heapsort(int v[], int n) {
+        for (int i = n/2; i >= 1; i--) {
+            Heapify(v, n, i);
+        }
+
+        int size = n;
+        while (size > 1) {
+            swap(v[1], v[size]);   
+            size--;            
+            Heapify(v, size, 1);  
+        }
+    }
+
+    bool empty(){
+        return size==0;
+    }
+
+};
+
+struct CompareBurst {
+    bool operator()(const process& a, const process& b) {
+        return a.burst_time < b.burst_time;  
     }
 };
 
-//Shortest job first algo 
-void SJF(vector<process> v) {
-    int n = v.size();
-    int completed = 0, CT = 0;
-    int WT, TAT;
+void SJF(vector<process> v,int n){
+    int CT,WT,TAT;
+    CT=0;
+    int completed=0;
 
-    priority_queue<process, vector<process>, cmp> pq;
+    Heaps<process,CompareBurst> h;
 
-    vector<bool> inQueue(n, false);
+    vector<bool> visited(n,false);
+    int i=0;
 
-    cout << left << setw(10) << "PID"
+      cout << left << setw(10) << "PID"
          << setw(15) << "Completion"
          << setw(15) << "TurnAround"
          << setw(15) << "Waiting" << endl;
+     
+    //assuming sorted process vector
+    while(completed < n){
 
-    while (completed < n) {
-        for (int i = 0; i < n; i++) {
-            if (!inQueue[i] && v[i].arrival_time <= CT) {
-                pq.push(v[i]);
-
-                inQueue[i] = true;
-            }
+        while(i<n && v[i].arrival_time<=CT && !visited[i]){
+            h.insertion(v[i]);
+            visited[i]=true;
+            i++;
         }
 
-        if (!pq.empty()) 
-        {
-            process p = pq.top(); pq.pop();
 
-            if (CT < p.arrival_time) CT = p.arrival_time;
+        if(!h.empty()){
+        process f=h.arr[1];
+        h.Deletion();
 
-            CT += p.burst_time;
-            TAT = CT - p.arrival_time;
-            WT = TAT - p.burst_time;
+        CT+=f.burst_time;
+        TAT=CT-f.arrival_time;
+        WT=TAT-f.burst_time;
 
-            cout << left << setw(10) << p.id
-        << setw(15) << CT
+        cout << left << setw(10) << f.id
+                 << setw(15) << CT
                  << setw(15) << TAT
                  << setw(15) << WT << endl;
 
-            completed++;
-        } 
-        else 
-        {
-            CT++;
-        }
+        completed++;
+
     }
+}
 }
 
 void RR(vector<process> v, int quantum) {
@@ -240,7 +326,7 @@ int main() {
 
     int quantum=3;
 
-    RR(v,quantum);
+    SJF(v,4);
 
     return 0;
 }
