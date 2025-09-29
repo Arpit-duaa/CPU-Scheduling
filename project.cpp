@@ -73,12 +73,40 @@ struct Queue{
 
 };
 
+void printGanttChart(vector<int> order, vector<int> finTime) {
+    cout << "\n Gantt Chart: \n";
+
+    for (int i = 0; i < order.size(); i++) {
+        cout << "------";
+    }
+    cout << "-\n";
+
+    for (int i = 0; i < order.size(); i++) {
+        cout << "| P" << order[i] << " ";
+    }
+    cout << "|\n";
+
+    for (int i = 0; i < order.size(); i++) {
+        cout << "------";
+    }
+    cout << "-\n";
+
+    cout << "0";
+    for (int i = 0; i < finTime.size(); i++) {
+        cout << setw(6) << finTime[i];
+    }
+    cout << "\n\n";
+}
+
+
 //Turn Around Time=Completion Time - Arrival Time
 //Waiting Time=Turn Around time - Burst Time
 
 
 //First Come First Serve
 void FCFS(vector<process> v){
+    vector<int> order;
+vector<int> finishTime;
 queue<process> q;
 int WT,TAT;
 int CT=0;
@@ -105,7 +133,11 @@ while(!q.empty()){
              << setw(15) << TAT
              << setw(15) << WT << endl;
 
+    order.push_back(p.id);
+    finishTime.push_back(CT);
+
 }
+printGanttChart(order, finishTime);
 
 }
 
@@ -326,7 +358,7 @@ int main() {
 
     int quantum=3;
 
-    SJF(v,4);
+    FCFS(v);
 
     return 0;
 }
